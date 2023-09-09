@@ -22,8 +22,11 @@ for filepath in filepaths:
     pdf.add_page()
 
     pdf.set_font(family="Times", size=18, style="B")
-    pdf.cell(w=50, h=10, ln=1, txt=f"Invoice nr: {invoice_nr}")
-    pdf.cell(w=50, h=20, ln=1, txt=f"Date: {date}")
+    pdf.cell(w=50, h=8, ln=1, txt=f"Invoice nr: {invoice_nr}")
+    pdf.cell(w=50, h=2, ln=1, txt="")
+
+    pdf.cell(w=50, h=8, ln=1, txt=f"Date: {date}")
+    pdf.cell(w=50, h=8, ln=1, txt="")
 
     # Reading df and columns
     df = pd.read_excel(filepath, sheet_name="Sheet 1")
@@ -52,6 +55,27 @@ for filepath in filepaths:
         pdf.cell(h=8, w=30, txt=f"{row['price_per_unit']}", align="r", border=1)
         # At last cell we must add ln=1 to get next value
         pdf.cell(h=8, w=30, txt=f"{row['total_price']}", align="r", border=1, ln=1)
+
+    # ADDING TOTAL SUM
+    total_sum = df["total_price"].sum()
+    pdf.set_font(family="Times", size=12, style="B")
+    pdf.cell(h=8, w=30, txt="Final Amount", align="l", border=1)
+    pdf.cell(h=8, w=70, txt=" ", align="l", border=1)
+    pdf.cell(h=8, w=50, txt=" ", align="r", border=1)
+    pdf.cell(h=8, w=30, txt=" ", align="r", border=1)
+    # At last cell we must add ln=1 to get next value
+    pdf.cell(h=8, w=30, txt=str(total_sum), align="r", border=1, ln=1)
+
+    # Output lines
+    pdf.set_font(family="Times", size=14, style="B")
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(h=5, w=0, txt=" ", ln=1)
+    pdf.cell(h=8, w=0, txt=f"The amount due is RS {total_sum}.", ln=1)
+    pdf.cell(h=2, w=0, txt=" ", ln=1)
+
+    # Company name and logo
+    pdf.cell(h=8, w=26, txt=f"PythonHow", align="l")
+    pdf.image("pythonhow.png", w=10)
 
     # Must be outside from nested loop.
     pdf.output(f"PDFs/{filename}.pdf")
