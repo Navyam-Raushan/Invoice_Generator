@@ -9,7 +9,6 @@ filepaths = glob.glob("invoices/*.xlsx")
 # for getting all data in these xl sheets
 # for processing xl files we need openpyxl library of python.
 for filepath in filepaths:
-    df = pd.read_excel(filepath, sheet_name="Sheet 1")
 
     # Extracting names of files to use it, firstline will give pure name by removing suffix
     """It will return filename 10001-2023.01.08.xlsx 
@@ -19,14 +18,40 @@ for filepath in filepaths:
     invoice_nr, date = filename.split("-")
 
     # now generating pdf files.
-    pdf = FPDF(orientation="P", unit="mm", format="a4")
+    pdf = FPDF(orientation="l", unit="mm", format="a4")
     pdf.add_page()
 
     pdf.set_font(family="Times", size=18, style="B")
     pdf.cell(w=50, h=10, ln=1, txt=f"Invoice nr: {invoice_nr}")
-    pdf.cell(w=50, h=10, ln=1, txt=f"Date: {date}")
+    pdf.cell(w=50, h=20, ln=1, txt=f"Date: {date}")
 
+    # Reading df and columns
+    df = pd.read_excel(filepath, sheet_name="Sheet 1")
+    columns = list(df.columns)
+    columns = [item.replace("_", " ").title() for item in columns]
+
+    # ADDING HEADER
+    pdf.set_font(family="Times", size=12, style="B")
+    pdf.cell(h=8, w=30, txt=columns[0], align="l", border=1)
+    pdf.cell(h=8, w=70, txt=columns[1], align="l", border=1)
+    pdf.cell(h=8, w=50, txt=columns[2], align="r", border=1)
+    pdf.cell(h=8, w=30, txt=columns[3], align="r", border=1)
+    # At last cell we must add ln=1 to get next value
+    pdf.cell(h=8, w=30, txt=columns[4], align="r", border=1, ln=1)
+
+    # ADDING CELLS TO TABLE
+    for index, row in df.iterrows():
+        pdf.set_font(family="Times", size=10)
+        pdf.set_text_color(80, 80, 80)
+
+        # ADDING CELLS TO TABLE
+        # here txt must be string not integer.
+        pdf.cell(h=8, w=30, txt=f"{row['product_id']}", align="l", border=1)
+        pdf.cell(h=8, w=70, txt=row["product_name"], align="l", border=1)
+        pdf.cell(h=8, w=50, txt=f"{row['amount_purchased']}", align="r", border=1)
+        pdf.cell(h=8, w=30, txt=f"{row['price_per_unit']}", align="r", border=1)
+        # At last cell we must add ln=1 to get next value
+        pdf.cell(h=8, w=30, txt=f"{row['total_price']}", align="r", border=1, ln=1)
+
+    # Must be outside from nested loop.
     pdf.output(f"PDFs/{filename}.pdf")
-
-
-
